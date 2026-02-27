@@ -157,7 +157,7 @@ keymaps = {
     ["gF"] = { "folder_picker", config = { picker = "telescope" } },
 
     -- Remove a default keymap (don't map it)
-    ["gr"] = nil,
+    ["gr"] = "none",
   },
 }
 ```

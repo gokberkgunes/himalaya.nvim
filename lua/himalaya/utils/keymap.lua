@@ -9,6 +9,11 @@ function M.apply(bufnr, keymap_config, actions)
 
 		-- Parse mapping format
 		if type(mapping) == "string" then
+			-- Check for 'none' action to skip mapping
+			if mapping == "none" then
+				goto continue
+			end
+			
 			-- Simple: key = "action_name"
 			action_name = mapping
 			callback = actions[action_name]
@@ -19,6 +24,11 @@ function M.apply(bufnr, keymap_config, actions)
 				callback = mapping[1]
 				desc = mapping.desc
 			elseif type(mapping[1]) == "string" then
+				-- Check for 'none' action to skip mapping
+				if mapping[1] == "none" then
+					goto continue
+				end
+				
 				-- With config: key = { "action_name", config = {...} }
 				action_name = mapping[1]
 				callback = actions[action_name]
