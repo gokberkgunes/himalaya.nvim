@@ -19,7 +19,7 @@ Himalaya is a Rust-based CLI tool for managing emails from the terminal. This pl
 
 ## Status
 
-🚧 Under active development
+🚧 Waiting for [himalaya v2](https://github.com/pimalaya/himalaya/tree/v2)
 
 ### ✅ Milestone 1: Core Features (Completed)
 
