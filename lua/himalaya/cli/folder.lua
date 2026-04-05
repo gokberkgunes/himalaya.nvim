@@ -1,10 +1,9 @@
 local cli = require("himalaya.cli")
-
 local M = {}
 
 function M.list(opts, callback)
 	opts = opts or {}
-	local args = { "--output json", "folder list" }
+	local args = { "--output", "json", "folder", "list" }
 
 	if opts.account and opts.account ~= "" then
 		table.insert(args, "--account")

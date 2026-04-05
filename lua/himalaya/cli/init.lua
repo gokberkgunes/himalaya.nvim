@@ -1,73 +1,47 @@
 local M = {}
-
 M.executable = "himalaya"
 
 function M.run(args, callback)
-	local cmd = { "sh", "-c", "RUST_LOG=off " .. M.executable .. " " .. table.concat(args, " ") }
+	-- Prepend 'env' to safely pass RUST_LOG without using a shell wrapper
+	local cmd = { "env", "RUST_LOG=off", M.executable }
+	for _, arg in ipairs(args) do
+		table.insert(cmd, arg)
+	end
 
-	local stdout = {}
-	local stderr = {}
+	-- Run synchronously to HALT Neovim's UI thread.
+	-- This guarantees mew gets Wayland focus and prevents PTY EOF hangs.
+	local output = vim.fn.system(cmd)
+	local code = vim.v.shell_error
 
-	vim.fn.jobstart(cmd, {
-		stdout_buffered = true,
-		stderr_buffered = true,
-		on_stdout = function(_, data)
-			if data then
-				vim.list_extend(stdout, data)
-			end
-		end,
-		on_stderr = function(_, data)
-			if data then
-				vim.list_extend(stderr, data)
-			end
-		end,
-		on_exit = function(_, code)
-			if code == 0 then
-				local output = table.concat(stdout, "\n")
-				callback(nil, output)
-			else
-				local error = table.concat(stderr, "\n")
-				callback(error, nil)
-			end
-		end,
-	})
+	if code == 0 then
+		callback(nil, output)
+	else
+		callback("CLI Error: " .. output, nil)
+	end
 end
 
 function M.run_json(args, callback)
 	M.run(args, function(err, output)
-		if err then
-			callback(err, nil)
-			return
-		end
-
-		-- Handle empty output
+		if err then return callback(err, nil) end
 		if not output or output == "" then
-			callback(nil, {})
-			return
+			return callback(nil, {})
 		end
 
 		local ok, data = pcall(vim.json.decode, output)
 		if not ok then
-			callback("Failed to parse JSON: " .. data, nil)
-			return
+			return callback("JSON Error: " .. tostring(data), nil)
 		end
 
-		-- Convert vim.NIL to nil recursively
 		local function clean_nil(obj)
 			if type(obj) == "table" then
 				for k, v in pairs(obj) do
-					if v == vim.NIL then
-						obj[k] = nil
-					elseif type(v) == "table" then
-						clean_nil(v)
-					end
+					if v == vim.NIL then obj[k] = nil
+					elseif type(v) == "table" then clean_nil(v) end
 				end
 			end
 			return obj
 		end
-
-		data = clean_nil(data)
-		callback(nil, data)
+		callback(nil, clean_nil(data))
 	end)
 end
 

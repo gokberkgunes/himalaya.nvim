@@ -4,16 +4,16 @@ local M = {}
 
 function M.list(opts, callback)
 	opts = opts or {}
-	local args = { "--output json", "envelope list" }
+	local args = { "--output", "json", "envelope", "list" }
 
 	if opts.folder then
 		table.insert(args, "--folder")
-		table.insert(args, vim.fn.shellescape(opts.folder))
+		table.insert(args, opts.folder)
 	end
 
 	if opts.account and opts.account ~= "" then
 		table.insert(args, "--account")
-		table.insert(args, vim.fn.shellescape(opts.account))
+		table.insert(args, opts.account)
 	end
 
 	if opts.page_size then
